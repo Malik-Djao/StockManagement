@@ -3,14 +3,13 @@ StockMaster Pro - Application de Gestion de Stock
 Backend Flask avec SQLAlchemy
 """
 import os
-
-os.makedirs("instance", exist_ok=True)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/stock.db'
-
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from sqlalchemy import func
+
+# Création du dossier autorisé
+os.makedirs("instance", exist_ok=True)
 
 # ============================================
 # CONFIGURATION DE L'APPLICATION
@@ -272,5 +271,6 @@ def get_product_info(product_id):
 # LANCEMENT DE L'APPLICATION
 # ============================================
     
+
 
 
