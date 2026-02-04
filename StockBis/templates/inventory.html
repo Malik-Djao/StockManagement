@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Inventaire - StockMaster Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ============================================
+         EN-TÊTE DE PAGE
+         ============================================ -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-dark">
+                <i class="fas fa-warehouse text-primary"></i>
+                Inventaire
+            </h1>
+            <p class="text-muted">Gérez vos produits en stock</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <i class="fas fa-plus"></i> Ajouter un produit
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TABLEAU DES PRODUITS
+         ============================================ -->
+    <div class="table-container">
+        {% if products %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom du Produit</th>
+                        <th>Stock</th>
+                        <th>Prix d'Achat</th>
+                        <th>Prix de Vente</th>
+                        <th>Marge</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td><strong>#{{ product.id }}</strong></td>
+                        <td>{{ product.name }}</td>
+                        <td>
+                            {% if product.stock_quantity < 5 %} <span class="badge-low-stock">
+                                <i class="fas fa-exclamation-triangle"></i> {{ product.stock_quantity }}
+                                </span>
+                                {% else %}
+                                <span class="badge-ok-stock">{{ product.stock_quantity }}</span>
+                                {% endif %}
+                        </td>
+                        <td>{{ "%.2f"|format(product.buying_price) }} FCFA</td>
+                        <td>{{ "%.2f"|format(product.selling_price) }} FCFA</td>
+                        <td>
+                            <strong class="text-success">
+                                {{ "%.2f"|format(product.selling_price - product.buying_price) }} FCFA
+                            </strong>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary-custom btn-sm-custom" data-bs-toggle="modal"
+                                data-bs-target="#editProductModal{{ product.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-sm-custom" data-bs-toggle="modal"
+                                data-bs-target="#deleteProductModal{{ product.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- ============================================
+                         MODALE ÉDITION PRODUIT
+                         ============================================ -->
+                    <div class="modal fade" id="editProductModal{{ product.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="fas fa-edit text-primary"></i>
+                                        Modifier le produit
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="/inventory/edit/{{ product.id }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom du produit</label>
+                                            <input type="text" class="form-control" name="name"
+                                                value="{{ product.name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Quantité en stock</label>
+                                            <input type="number" class="form-control" name="stock_quantity"
+                                                value="{{ product.stock_quantity }}" min="0" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Prix d'achat (FCFA)</label>
+                                            <input type="number" step="0.01" class="form-control" name="buying_price"
+                                                value="{{ product.buying_price }}" min="0" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Prix de vente (FCFA)</label>
+                                            <input type="number" step="0.01" class="form-control" name="selling_price"
+                                                value="{{ product.selling_price }}" min="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary-custom">
+                                            <i class="fas fa-save"></i> Enregistrer
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================
+                         MODALE SUPPRESSION PRODUIT
+                         ============================================ -->
+                    <div class="modal fade" id="deleteProductModal{{ product.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                                        Confirmer la suppression
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Êtes-vous sûr de vouloir supprimer le produit <strong>{{ product.name }}</strong>
+                                        ?</p>
+                                    <p class="text-danger"><small>Cette action est irréversible.</small></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Annuler</button>
+                                    <form method="POST" action="/inventory/delete/{{ product.id }}"
+                                        style="display: inline;">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info alert-custom">
+            <i class="fas fa-info-circle"></i>
+            Aucun produit dans l'inventaire. Commencez par ajouter un produit !
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================
+     MODALE AJOUT PRODUIT
+     ============================================ -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus text-primary"></i>
+                    Ajouter un nouveau produit
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/inventory/add">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nom du produit</label>
+                        <input type="text" class="form-control" name="name" placeholder="Ex: Ordinateur portable"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantité en stock</label>
+                        <input type="number" class="form-control" name="stock_quantity" placeholder="Ex: 10" min="0"
+                            value="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prix d'achat (FCFA)</label>
+                        <input type="number" step="0.01" class="form-control" name="buying_price"
+                            placeholder="Ex: 500.00" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prix de vente (FCFA)</label>
+                        <input type="number" step="0.01" class="form-control" name="selling_price"
+                            placeholder="Ex: 750.00" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
