@@ -2,6 +2,10 @@
 StockMaster Pro - Application de Gestion de Stock
 Backend Flask avec SQLAlchemy
 """
+import os
+
+os.makedirs("instance", exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/stock.db'
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -268,5 +272,5 @@ def get_product_info(product_id):
 # LANCEMENT DE L'APPLICATION
 # ============================================
     
-    # Lancement du serveur Flask en mode debug
-    app.run(debug=True, host='0.0.0.0', port=5000)
+
+
